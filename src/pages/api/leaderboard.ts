@@ -1,4 +1,3 @@
-// pages/api/high-scores.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 
@@ -10,18 +9,44 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  try {
-    const { data, error } = await supabase
-      .from('wwpm')
-      .select('*')
-      .order('score', { ascending: false })
-      .limit(20);
+  if (req.method === 'GET') {
+    // get leaderboard
+    try {
+      const { data, error } = await supabase
+        .from('wwpm')
+        .select('*')
+        .order('score', { ascending: false })
+        .limit(20);
 
-    if (error) throw error;
+      if (error) throw error;
 
-    res.status(200).json(data);
-  } catch (error) {
-    console.error('error fetching scores:', error);
-    res.status(500).json({ error: 'error fetching scores' });
+      res.status(200).json(data);
+    } catch (error) {
+      console.error('error fetching scores:', error);
+      res.status(500).json({ error: 'error fetching scores' });
+    }
+  } else if (req.method === 'POST') {
+    // add high score
+    const { username, score } = req.body;
+
+    if (!username || !score) {
+      return res.status(400).json({ error: 'username and score are required' });
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('wwpm')
+        .insert([{ username, score }]);
+
+      if (error) throw error;
+
+      res.status(200).json({ message: 'score added successfully', data });
+    } catch (error) {
+      console.error('error adding score:', error);
+      res.status(500).json({ error: 'error adding score' });
+    }
+  } else {
+    res.setHeader('Allow', ['GET', 'POST']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
