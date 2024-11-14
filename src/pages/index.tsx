@@ -205,7 +205,6 @@ const App: React.FC = () => {
           onMouseUp={handleMouseUp}
         />
         <p>Recognized Text: {recognizedText}</p>
-        <p>WWPM: {wpm}</p>
         <h3>
           Progress: {currentWordIndex}/{words.length}
         </h3>
