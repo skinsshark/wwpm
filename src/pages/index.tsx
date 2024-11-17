@@ -71,13 +71,15 @@ const App: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const context = canvas.getContext('2d');
-    if (!context) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.lineWidth = 5;
 
     const startX = e.nativeEvent.offsetX;
     const startY = e.nativeEvent.offsetY;
-    context.beginPath();
-    context.moveTo(startX, startY);
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
     setIsDrawing(true);
     setStrokes((prevStrokes) => [...prevStrokes, [{ x: startX, y: startY }]]);
   };
@@ -85,13 +87,15 @@ const App: React.FC = () => {
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !canvasRef.current) return;
 
-    const context = canvasRef.current.getContext('2d');
-    if (!context) return;
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+
+    ctx.lineWidth = 5;
 
     const x = e.nativeEvent.offsetX;
     const y = e.nativeEvent.offsetY;
-    context.lineTo(x, y);
-    context.stroke();
+    ctx.lineTo(x, y);
+    ctx.stroke();
     setStrokes((prevStrokes) => {
       const updatedStrokes = [...prevStrokes];
       updatedStrokes[updatedStrokes.length - 1].push({ x, y });
@@ -100,6 +104,54 @@ const App: React.FC = () => {
   };
 
   const handleMouseUp = () => {
+    setIsDrawing(false);
+    recognizeText();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.lineWidth = 5;
+
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const startX = touch.clientX - rect.left;
+    const startY = touch.clientY - rect.top;
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    setIsDrawing(true);
+    setStrokes((prevStrokes) => [...prevStrokes, [{ x: startX, y: startY }]]);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    if (!isDrawing || !canvasRef.current) return;
+
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+
+    ctx.lineWidth = 5;
+
+    const touch = e.touches[0];
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    setStrokes((prevStrokes) => {
+      const updatedStrokes = [...prevStrokes];
+      updatedStrokes[updatedStrokes.length - 1].push({ x, y });
+      return updatedStrokes;
+    });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault(); // Prevent page scrolling
     setIsDrawing(false);
     recognizeText();
   };
@@ -150,9 +202,9 @@ const App: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const context = canvas.getContext('2d');
-    if (context) {
-      context.clearRect(0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
     setRecognizedText('');
     setStrokes([]);
@@ -171,20 +223,22 @@ const App: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const context = canvas.getContext('2d');
-    if (!context) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = 5;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     strokesToDraw.forEach((stroke) => {
-      context.beginPath();
+      ctx.beginPath();
       stroke.forEach((point, index) => {
         if (index === 0) {
-          context.moveTo(point.x, point.y);
+          ctx.moveTo(point.x, point.y);
         } else {
-          context.lineTo(point.x, point.y);
+          ctx.lineTo(point.x, point.y);
         }
       });
-      context.stroke();
+      ctx.stroke();
     });
   };
 
@@ -203,7 +257,11 @@ const App: React.FC = () => {
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         />
+
         <p>Recognized Text: {recognizedText}</p>
         <h3>
           Progress: {currentWordIndex}/{words.length}
