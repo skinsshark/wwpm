@@ -18,7 +18,9 @@ const App: React.FC = () => {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
 
-  const words = ['this', 'is', 'so', 'difficult'];
+  const wordStr = 'the quick brown fox jumped over the lazy dog';
+  const words = wordStr.split(' ');
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const fetchHighScores = async () => {
@@ -75,6 +77,7 @@ const App: React.FC = () => {
     if (!ctx) return;
 
     ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
 
     const startX = e.nativeEvent.offsetX;
     const startY = e.nativeEvent.offsetY;
@@ -91,6 +94,7 @@ const App: React.FC = () => {
     if (!ctx) return;
 
     ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
 
     const x = e.nativeEvent.offsetX;
     const y = e.nativeEvent.offsetY;
@@ -117,6 +121,7 @@ const App: React.FC = () => {
     if (!ctx) return;
 
     ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
 
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
@@ -136,6 +141,7 @@ const App: React.FC = () => {
     if (!ctx) return;
 
     ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
 
     const touch = e.touches[0];
     const rect = canvasRef.current.getBoundingClientRect();
@@ -227,6 +233,7 @@ const App: React.FC = () => {
     if (!ctx) return;
 
     ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     strokesToDraw.forEach((stroke) => {
